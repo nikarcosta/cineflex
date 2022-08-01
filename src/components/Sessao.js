@@ -1,43 +1,139 @@
-import { Link } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Assento from "./Assento";
 
-
-function MontarAssentos({id, name, isAvailable}){
-    
-    return(
-        <>
-        {
-            isAvailable === true? <div key={id} className="dot disponivel" onClick={SelecionarAssento}><span>{name}</span></div> :
-            <div key={id} className="dot indisponivel"><span>{name}</span></div>
-        }        
-        </>
-    );
-}
-
-function SelecionarAssento(){
-
-}
-
-export default function Sessao(){
+export default function Sessao(props){
     const {idSessao} = useParams();
-    const [assentos, setAssentos] = useState(null);
-    const [nome, setNome] =  useState("");
-    const [cpf, setCpf] = useState("");
-    console.log("ID SESSAO:" + idSessao);
+    const navigate = useNavigate();
+    const {finalizar} = props;
+    const [sessao, setSessao] = useState(null);
+    const [assentosSelecionados, setAssentosSelecionados] = useState([]);
+    const [dadosCompra, setDadosCompra] = useState({nome:"", cpf:""});
 
     useEffect(() => {
-        const URL = `https://mock-api.driven.com.br/api/v5/cineflex/showtimes/${idSessao}/seats`;
+        const URL = `https://mock-api.driven.com.br/api/v7/cineflex/showtimes/${idSessao}/seats`;
         const promise = axios.get(URL);
 
         promise.then((response) => {
             const {data} = response;
-            setAssentos(data);
-            console.log(data);
+            setSessao(data);
         })
         .catch(err => alert(err.response.statusText));
     },[]);
+
+    function confirmarCompra(event) {
+        event.preventDefault();
+        if(assentos.length > 0) {
+            const URL = `https://mock-api.driven.com.br/api/v7/cineflex/seats/book-many`;
+            const promise = axios.post(URL, {
+            ids: assentosSelecionados.map(assento => assento.id),
+            name: dadosCompra.nome,
+            cpf: dadosCompra.cpf
+            });
+      
+            promise.then((response) => {
+                finalizar({
+                filme: sessao.movie.title,
+                dia: sessao.day.date,
+                horario: sessao.name,
+                assentos: assentosSelecionados,
+                comprador: dadosCompra
+            });
+      
+            navigate("/sucesso");
+            });
+            promise.catch(err => alert(err.response.statusText));
+      
+        } else {
+            alert("Selecione pelo menos um assento!")
+        }
+    }
+      
+    function toggle(id, numero) {
+        const jaSelecionado = assentosSelecionados.some(assento => assento.id === id);
+        if(!jaSelecionado) {
+            setAssentosSelecionados([...assentosSelecionados, {id, numero}]);
+        } else {
+            const novosAssentos = assentosSelecionados.filter(assento => assento.id !== id);
+            setAssentosSelecionados(novosAssentos);
+        }
+    }
+      
+    function montarAssentos() {
+        if(sessao !== null) {
+            return sessao.seats.map(seat => {
+              const {id, name, isAvailable} = seat;
+              const selecionado = assentosSelecionados.some(assento => assento.id === id);
+              return (
+                <Assento 
+                  key={id} 
+                  id={id} 
+                  numero={name} 
+                  disponivel={isAvailable} 
+                  selecionado={selecionado}
+                  aoSelecionar={(id, numero) => toggle(id, numero)}
+                />
+              )
+            })
+          } else {
+            <p>Carregando...</p>;
+          }
+        }
+      
+        function montarFooter() {
+          if(sessao !== null) {
+            return <>
+            <div className="footer-capa-filme">
+              <img src={sessao.movie.posterURL} alt={sessao.movie.title} />
+            </div>
+              <div className="nome-filme">
+                <p>{sessao.movie.title}</p>
+                <p>{sessao.day.weekday} - {sessao.name}</p>
+              </div>
+            </>
+          } else {
+            return <p>Carregando...</p>;
+          }
+        }
+      
+        function montarLegenda() {
+          return (
+            <>
+              <div className="legenda">
+                <div className="cor-legenda"><div className="dot selecionado"></div><span>Selecionado</span></div>
+                <div className="cor-legenda"><div className="dot disponivel"></div><span>Disponível</span></div>
+                <div className="cor-legenda"><div className="dot indisponivel"></div><span>Indisponível</span></div>
+              </div>
+            </>
+          )
+        }
+      
+        function montarFormularioCompra() {
+          return (
+            <>
+              <form>
+              <label htmlFor="nome">Nome do comprador:</label>
+              <input type="text" id="nome" value={dadosCompra.nome} placeholder="Digite seu nome..." required
+                onChange={(e) => setDadosCompra({...dadosCompra, nome: e.target.value })}
+              />
+              <label htmlFor="cpf">CPF do comprador:</label>
+              <input type="text" id="cpf" value={dadosCompra.cpf} placeholder="Digite seu CPF..." required
+                onChange={(e) => setDadosCompra({...dadosCompra, cpf: e.target.value })}
+              />
+              <div className="reservar-assento">
+                <button className="botao-reservar">Reservar assento(s)</button>
+              </div>
+              </form>
+            </>
+          )
+        }
+      
+        const assentos = montarAssentos();
+        const footer = montarFooter();
+        const legenda = montarLegenda();
+        const formularioCompra = montarFormularioCompra();
+
 
 
     return(
@@ -45,44 +141,16 @@ export default function Sessao(){
             <div className="tela-sessao">
                 <div className="titulo-sessao-assentos"><span>Selecione o(s) assento(s)</span></div>
                 <div className="container-assentos">
-                {
-                    assentos === null ? <p>Carregando...</p>:
-                    assentos.seats.map(assento => {
-                        const {id, name, isAvailable} = assento;
-                        console.log(assento);
-                        console.log(id);
-                        console.log("Name: " + name);
-                        console.log(isAvailable);
-                        return <MontarAssentos id={id} name={name} isAvailable={isAvailable}/>
-                    })
-                }
-                    <div className="legenda">
-                        <div className="cor-legenda"><div className="dot selecionado"></div><span>Selecionado</span></div>
-                        <div className="cor-legenda"><div className="dot disponivel"></div><span>Disponível</span></div>
-                        <div className="cor-legenda"><div className="dot indisponivel"></div><span>Indisponível</span></div>
-                    </div>
+                    {assentos}
+                    {legenda}
                 </div>
-                <div className="formulario">
-                    <div><span>Nome do comprador:</span></div>
-                    <input type="text" placeholder="Digite seu nome......"/>
-                    <div><span>CPF do comprador:</span></div>
-                    <input type="text" placeholder="Digite seu CPF..."/>
+                <div className="formulario" onSubmit={confirmarCompra}>
+                    {formularioCompra}
                 </div>
-                <div className="reservar-assento">
-                    <button className="botao-reservar"><span>Reservar assento(s)</span></button>
-                </div>
-            </div>
-            {
-                assentos === null? <p>Carregando...</p>:
                 <footer>
-                <div className="info-footer">
-                    <div className="footer-capa-filme">
-                        <img src={assentos.movie.posterURL} alt="capa" />
-                    </div>  
-                    <div className="nome-filme"><span>{assentos.movie.title}</span><span>{assentos.day.weekday} - {assentos.name}</span></div>
-                </div>
+                <div className="info-footer">{footer}</div>
                 </footer>
-            }  
+            </div>
         </>
     );
 }

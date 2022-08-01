@@ -1,4 +1,5 @@
 import React from "react";
+import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "../assets/css/reset.css";
 import "../assets/css/styles.css";
@@ -11,6 +12,7 @@ import Sucesso from "./Sucesso";
 
 
 export default function App(){
+    const [reserva, setReserva] = useState(null);
     return(
         <>
         <BrowserRouter>
@@ -18,8 +20,8 @@ export default function App(){
             <Routes>
             <Route path="/" element={<ListaFilmes />} />
             <Route path="/sessoes/:idFIlme" element={<Filme />} />
-            <Route path="/assentos/:idSessao" element={<Sessao />} />
-            <Route path="/sucesso" element={<Sucesso />} />
+            <Route path="/assentos/:idSessao" element={<Sessao finalizar={(reserva) => setReserva(reserva)}/>} />
+            <Route path="/sucesso" element={<Sucesso reserva={reserva} novaReserva={() => setReserva(null)}/>} />
             </Routes>
         </BrowserRouter>
         </>

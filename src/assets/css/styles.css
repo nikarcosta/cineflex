@@ -62,8 +62,6 @@ header span{
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    /*margin-left: 20px;
-    margin-right: 20px;*/
 }
 
 .lista-de-filmes div{
@@ -74,7 +72,6 @@ header span{
     justify-content: center;
     align-items: center;
     margin: 10px;
-
 }
 
 .lista-de-filmes img{
@@ -161,9 +158,6 @@ header span{
 }
 
 .footer-capa-filme img{
-    /*height: 89px;
-    width: 64px;
-    margin-right: 20px;*/
     width: 48px;
     height: 72px;
     padding-left: 5px;
@@ -252,6 +246,7 @@ a {
     justify-content: center;
     align-items: center;
     margin: 5px;
+    cursor: pointer;
   }
 
   .dot span{
@@ -285,7 +280,7 @@ a {
     white-space: nowrap;
     display: flex;
     justify-content: center;
-    align-items: center;
+    flex-direction: column;
   }
 
   .nome-filme span{
@@ -325,11 +320,6 @@ a {
     font-size: 18px;
     font-weight: 400;
     text-align: left;
-  }
-
-  .formulario div{
-    margin-bottom: 10px;
-    margin-top: 10px;
   }
 
   input{

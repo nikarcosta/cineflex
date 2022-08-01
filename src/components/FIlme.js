@@ -36,13 +36,10 @@ export default function Filme(){
     const [filme, setFilme] = useState(null);
   
     useEffect(() => {
-      const URL = `https://mock-api.driven.com.br/api/v5/cineflex/movies/${idFIlme}/showtimes`;
+      const URL = `https://mock-api.driven.com.br/api/v7/cineflex/movies/${idFIlme}/showtimes`;
       const promise = axios.get(URL);
       promise.then((response) => {
-        //const {data} = response;
-        //setFilme(data);
         setFilme(response.data);
-        console.log(response.data);
       });
       promise.catch(err => alert(err.response.statusText));
     },[]);

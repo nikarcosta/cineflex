@@ -21,7 +21,7 @@ export default function ListaFilmes(){
     const [listaFilmes, setListaFilmes] = useState([]);
 
     useEffect(() => {
-        const promise = axios.get("https://mock-api.driven.com.br/api/v5/cineflex/movies");
+        const promise = axios.get("https://mock-api.driven.com.br/api/v7/cineflex/movies");
 
         promise.then((response) => {
             setListaFilmes([...response.data]);
